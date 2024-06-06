@@ -2,27 +2,31 @@ const chatContent = document.getElementById('chat');
 const sendButton = document.getElementById('send-button');
 const messageInput = document.getElementById('message-input');
 
-function addInitialMessage() {
-  addMessageToChat(
+async function addInitialMessage() {
+  await addMessageToChat(
     'Chat AI',
     'Jelaskan tentang produk yang ingin anda pasarkan. Kami akan memberi bantuan strategi marketing dan microinfluencer yang cocok',
     'bot'
   );
 }
 
-function createInfluencerCard(id) {
+async function createInfluencerCard(id, name, about) {
+  const response = await fetch('https://randomuser.me/api/');
+  const data = await response.json();
+  const imageUrl = data.results[0].picture.thumbnail;
   return `
         <div class="influencer-card">
-            <img src="https://via.placeholder.com/100" alt="${id}">
+            <img src="${imageUrl}" alt="${id}">
             <div class="influencer-info">
-                <strong>${id}</strong>
-                <p>Details about ${id}</p>
+                <strong>${name}</strong>
+                <p>${about || ''}</p>
+                <button onclick="contactInfluencer('${id}')">Hubungi</button>
             </div>
         </div>
     `;
 }
 
-function addMessageToChat(
+async function addMessageToChat(
   senderName,
   message,
   senderClass,
@@ -40,10 +44,12 @@ function addMessageToChat(
   }
 
   if (influencers.length > 0) {
-    const influencerCards = influencers
-      ?.map((inf) => createInfluencerCard(inf))
-      ?.join('\n');
-    message += influencerCards;
+    const influencerCards = await Promise.all(
+      influencers?.map((inf) =>
+        createInfluencerCard(inf.influencer_uid, inf.name, inf.description)
+      )
+    );
+    message += influencerCards?.join('\n');
   }
 
   messageElement.innerHTML = `<div class="chat-bubble"><strong>${senderName}</strong><p>${message}</p></div>`;
@@ -62,14 +68,14 @@ async function handleSendMessage() {
     const message = messageInput.value.trim();
     if (message === '') return;
 
-    addMessageToChat('User', message, 'user');
+    await addMessageToChat('User', message, 'user');
 
     messageInput.value = '';
 
     chatContent.scrollTop = chatContent.scrollHeight + 200;
 
     const loadingMessageId = 'loading-message';
-    addMessageToChat('Chat AI', 'Typing...', 'bot', loadingMessageId);
+    await addMessageToChat('Chat AI', 'Typing...', 'bot', loadingMessageId);
 
     const response = await fetch(
       'https://mrfirdauss-api-marketing.hf.space/generate',
@@ -86,21 +92,26 @@ async function handleSendMessage() {
     removeMessageFromChat(loadingMessageId);
 
     if (data.response) {
-      addMessageToChat(
+      await addMessageToChat(
         'Chat AI',
         data.response,
         'bot',
+        null,
         data?.influencers || []
       );
     } else {
-      addMessageToChat('Chat AI', 'Sorry, I did not understand that.', 'bot');
+      await addMessageToChat(
+        'Chat AI',
+        'Sorry, I did not understand that.',
+        'bot'
+      );
     }
 
     chatContent.scrollTop = chatContent.scrollHeight;
   } catch (e) {
     console.error(e);
     removeMessageFromChat('loading-message');
-    addMessageToChat(
+    await addMessageToChat(
       'Chat AI',
       'There was an error processing your message. Please try again later.',
       'bot'

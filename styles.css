@@ -10,7 +10,7 @@ body {
 
 .container {
     position: relative;
-    width: 400px;
+    width: 480px;
     height: 100vh;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -134,4 +134,45 @@ body {
 
 .chat-input button:hover {
     background-color: #12C2C6;
+}
+
+.influencer-card {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+.influencer-card img {
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.influencer-info {
+    display: flex;
+    flex-direction: column;
+    max-width: 150px;
+}
+
+.influencer-info p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.influencer-info button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.influencer-info button:hover {
+    background-color: #0056b3;
 }
