@@ -10,7 +10,25 @@ function addInitialMessage() {
   );
 }
 
-function addMessageToChat(senderName, message, senderClass, messageId = null) {
+function createInfluencerCard(id) {
+  return `
+        <div class="influencer-card">
+            <img src="https://via.placeholder.com/100" alt="${id}">
+            <div class="influencer-info">
+                <strong>${id}</strong>
+                <p>Details about ${id}</p>
+            </div>
+        </div>
+    `;
+}
+
+function addMessageToChat(
+  senderName,
+  message,
+  senderClass,
+  messageId = null,
+  influencers = []
+) {
   const messageElement = document.createElement('div');
   messageElement.classList.add('chat-message', senderClass);
   if (messageId) {
@@ -19,6 +37,13 @@ function addMessageToChat(senderName, message, senderClass, messageId = null) {
 
   if (senderClass === 'bot') {
     message = marked.parse(message);
+  }
+
+  if (influencers.length > 0) {
+    const influencerCards = influencers
+      ?.map((inf) => createInfluencerCard(inf))
+      ?.join('\n');
+    message += influencerCards;
   }
 
   messageElement.innerHTML = `<div class="chat-bubble"><strong>${senderName}</strong><p>${message}</p></div>`;
@@ -61,7 +86,12 @@ async function handleSendMessage() {
     removeMessageFromChat(loadingMessageId);
 
     if (data.response) {
-      addMessageToChat('Chat AI', data.response, 'bot');
+      addMessageToChat(
+        'Chat AI',
+        data.response,
+        'bot',
+        data?.influencers || []
+      );
     } else {
       addMessageToChat('Chat AI', 'Sorry, I did not understand that.', 'bot');
     }
